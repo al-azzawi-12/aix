@@ -26,20 +26,19 @@ endif()
 
 message(STATUS "Found glow: ${GLOW_BIN}")
 
-
 set(POJECT_SOURCES
-    src/main.cpp
     src/cli/arg_parser.cpp 
     src/cli/formatter.cpp
     src/network/http_client.cpp
     src/utils/file_system.cpp
     src/network/api_handler.cpp
+    src/app_engine.cpp
 )
 
-add_executable(aix ${POJECT_SOURCES})
+add_library(aix_core STATIC ${POJECT_SOURCES})
 
-target_include_directories(aix PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+target_include_directories(aix_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(aix_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cli
     ${CMAKE_CURRENT_SOURCE_DIR}/src/network
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
@@ -47,14 +46,15 @@ target_include_directories(aix PRIVATE
     ${CURL_INCLUDE_DIRS}
 )
 
-target_link_libraries(aix PRIVATE
+target_link_libraries(aix_core PRIVATE
     ${CURLPP_LIBRARY}
     CURL::libcurl
     CLI11::CLI11
-    Catch2::Catch2
-    Catch2::Catch2WithMain
     nlohmann_json::nlohmann_json
 )
+
+add_executable(aix src/main.cpp)
+target_link_libraries(aix PRIVATE aix_core)
 
 enable_testing()
 
